@@ -1,6 +1,6 @@
 # For micromamba image documentation,
 # goto https://hub.docker.com/r/mambaorg/micromamba
-ARG MICROMAMBA_VERSION=1.3.1
+ARG MICROMAMBA_VERSION=1.5.8
 FROM mambaorg/micromamba:${MICROMAMBA_VERSION}
 
 ARG NEW_MAMBA_USER=xcube
@@ -41,10 +41,84 @@ ENV MAMBA_USER=$NEW_MAMBA_USER
 
 USER $MAMBA_USER
 
-# Install xcube dependencies
+# Install xcube dependencies in stages to avoid memory issues
 COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/environment.yml
-RUN micromamba install -y -n base -f /tmp/environment.yml \
+
+# Configure micromamba for better stability
+ENV MAMBA_NO_BANNER=1
+ENV MAMBA_RETRY_TIMEOUT=10
+ENV MAMBA_RETRY_CLEAN_CACHE=1
+
+# Install core Python and essential packages first
+RUN micromamba install -y -n base python \
     && micromamba clean --all --yes
+
+# Install packages in smaller batches to prevent memory exhaustion
+# Each RUN command includes retry logic and cleanup
+RUN set -e; \
+    for i in 1 2 3; do \
+        micromamba install -y -n base \
+            affine botocore cftime click cmocean \
+            dask dask-image deprecated distributed \
+            && micromamba clean --all --yes && break || \
+        (echo "Attempt $i failed, retrying..." && micromamba clean --all --yes && sleep 5); \
+    done
+
+RUN set -e; \
+    for i in 1 2 3; do \
+        micromamba install -y -n base \
+            fiona fsspec gdal geopandas jdcal \
+            jsonschema libgdal-jp2openjpeg mashumaro \
+            && micromamba clean --all --yes && break || \
+        (echo "Attempt $i failed, retrying..." && micromamba clean --all --yes && sleep 5); \
+    done
+
+RUN set -e; \
+    for i in 1 2 3; do \
+        micromamba install -y -n base \
+            matplotlib-base netcdf4 numba numcodecs \
+            numpy pandas pillow \
+            && micromamba clean --all --yes && break || \
+        (echo "Attempt $i failed, retrying..." && micromamba clean --all --yes && sleep 5); \
+    done
+
+RUN set -e; \
+    for i in 1 2 3; do \
+        micromamba install -y -n base \
+            pyjwt pyproj pyyaml rasterio requests \
+            rfc3339-validator rioxarray s3fs \
+            && micromamba clean --all --yes && break || \
+        (echo "Attempt $i failed, retrying..." && micromamba clean --all --yes && sleep 5); \
+    done
+
+RUN set -e; \
+    for i in 1 2 3; do \
+        micromamba install -y -n base \
+            setuptools shapely tabulate tornado \
+            urllib3 xarray zarr \
+            && micromamba clean --all --yes && break || \
+        (echo "Attempt $i failed, retrying..." && micromamba clean --all --yes && sleep 5); \
+    done
+
+# Install additional packages
+RUN set -e; \
+    for i in 1 2 3; do \
+        micromamba install -y -n base \
+            altair chartlets \
+            && micromamba clean --all --yes && break || \
+        (echo "Attempt $i failed, retrying..." && micromamba clean --all --yes && sleep 5); \
+    done
+
+# Install development and testing packages
+RUN set -e; \
+    for i in 1 2 3; do \
+        micromamba install -y -n base \
+            flake8 isort kerchunk moto \
+            pytest pytest-cov requests-mock \
+            ruff werkzeug \
+            && micromamba clean --all --yes && break || \
+        (echo "Attempt $i failed, retrying..." && micromamba clean --all --yes && sleep 5); \
+    done
 
 # Copy files for xcube source install
 COPY --chown=$MAMBA_USER:$MAMBA_USER ./xcube /tmp/xcube
