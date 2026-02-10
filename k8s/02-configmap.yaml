@@ -1,0 +1,226 @@
+# ==============================================================================
+# ConfigMap for xcube Ukraine Service Configuration (WITH PYRAMIDS)
+# ==============================================================================
+# CAMBIO PRINCIPAL: Los datasets ahora apuntan a .levels en lugar de .zarr
+# Esto permite que xcube sirva múltiples niveles de zoom (8-11 para LWQ100, 7-10 para LWQ300)
+#
+# APLICAR:
+#   kubectl apply -f k8s/02-configmap.yaml
+#   kubectl rollout restart deployment xcube-ukraine -n xcube-ukraine
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xcube-ukraine-config
+  namespace: xcube-ukraine
+data:
+  xcube_ukraine_config.yml: |
+    # xcube Configuration for Ukraine Lake Water Quality Datasets
+    # This configuration uses /xcube as URL prefix for reverse proxy
+    # 
+    # Multi-resolution pyramid features:
+    # - 4 resolution levels (0.zarr, 1.zarr, 2.zarr, 3.zarr)
+    # - Automatic level selection based on zoom
+    # - Pre-computed aggregations for fast rendering
+    # - Fixes blank tiles at different zoom levels
+    
+    # URL Configuration for HTTPS proxy
+    # reverse_url_prefix tells xcube to generate URLs with this prefix
+    # This fixes the "Mixed Content" error with openapi.json
+    reverse_url_prefix: "https://data.dev-wins.com/xcube"
+    
+    DataStores:
+      - Identifier: azure_ukraine
+        StoreId: abfs
+        StoreParams:
+          root: "data"
+          storage_options:
+            account_name: "ihpwinsdata"
+            account_key: "<AZURE_STORAGE_ACCOUNT_KEY>"
+    
+    Datasets:
+      # ========================================================================
+      # LWQ100 - Multi-resolution Pyramid (Sentinel-2 MSI, 100m base)
+      # ========================================================================
+      - Identifier: ukraine_lwq100_pyramid
+        Title: "Ukraine Lake Water Quality - LWQ100 MSI (Multi-resolution)"
+        BoundingBox: [22.0, 44.0, 40.5, 52.5]
+        StoreInstanceId: azure_ukraine
+        Path: "xcube/c_gls_LWQ100/ukraine/ukraine_lwq100_orig.levels"
+        Style: default
+        
+        # Pyramid info:
+        # - Level 3 (base): ~100m resolution, zoom 11
+        # - Level 2: ~200m resolution, zoom 10 ← ANTES ESTABA EN BLANCO
+        # - Level 1: ~400m resolution, zoom 9
+        # - Level 0: ~800m resolution, zoom 8
+        # Total levels: 4 (covering zoom 8-11)
+        
+        AccessControl:
+          RequiredScopes: []
+      
+      # ========================================================================
+      # LWQ300 - Multi-resolution Pyramid (Sentinel-3 OLCI, 300m base)
+      # ========================================================================
+      - Identifier: ukraine_lwq300_pyramid
+        Title: "Ukraine Lake Water Quality - LWQ300 OLCI (Multi-resolution)"
+        BoundingBox: [22.0, 44.0, 40.5, 52.5]
+        StoreInstanceId: azure_ukraine
+        Path: "xcube/c_gls_LWQ300/ukraine/ukraine_lwq300_orig.levels"
+        Style: default
+        
+        # Pyramid info:
+        # - Level 3 (base): ~300m resolution, zoom 10
+        # - Level 2: ~600m resolution, zoom 9
+        # - Level 1: ~1200m resolution, zoom 8
+        # - Level 0: ~2400m resolution, zoom 7
+        # Total levels: 4 (covering zoom 7-10)
+        
+        AccessControl:
+          RequiredScopes: []
+      
+      # ========================================================================
+      # OPCIONAL: Mantener datasets originales para comparación
+      # ========================================================================
+      # Puedes descomentar estos si quieres mantener los originales disponibles
+      # (útil para comparar rendimiento pyramid vs single-resolution)
+      #
+      # - Identifier: ukraine_lwq100_original
+      #   Title: "Ukraine Lake Water Quality - LWQ100 MSI (Original)"
+      #   BoundingBox: [22.0, 44.0, 40.5, 52.5]
+      #   StoreInstanceId: azure_ukraine
+      #   Path: "xcube/c_gls_LWQ100/ukraine/ukraine_lwq.zarr"
+      #   Style: default
+      #   AccessControl:
+      #     RequiredScopes: []
+      # 
+      # - Identifier: ukraine_lwq300_original
+      #   Title: "Ukraine Lake Water Quality - LWQ300 OLCI (Original)"
+      #   BoundingBox: [22.0, 44.0, 40.5, 52.5]
+      #   StoreInstanceId: azure_ukraine
+      #   Path: "xcube/c_gls_LWQ300/ukraine/ukraine_lwq.zarr"
+      #   Style: default
+      #   AccessControl:
+      #     RequiredScopes: []
+    
+    # Styles Configuration with ColorMappings
+    Styles:
+      - Identifier: default
+        ColorMappings:
+          # LWQ100 variables (MSI - Sentinel-2)
+          turbidity_mean:
+            ColorBar: "viridis"
+            ValueRange: [0, 100]
+          chla_mean:
+            ColorBar: "viridis"
+            ValueRange: [0, 50]
+          Rw490_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.1]
+          Rw560_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.1]
+          Rw665_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.1]
+          Rw842_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.08]
+          Rw1610_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.05]
+          Rw2190_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.05]
+          
+          # LWQ300 variables (OLCI - Sentinel-3)
+          trsp_mean:
+            ColorBar: "viridis"
+            ValueRange: [0, 10]
+          tsm_mean:
+            ColorBar: "viridis"
+            ValueRange: [0, 50]
+          Rw400_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.1]
+          Rw412p5_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.1]
+          Rw442p5_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.1]
+          Rw510_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.1]
+          Rw620_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.1]
+          Rw681_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.1]
+          Rw709_rep:
+            ColorBar: "plasma"
+            ValueRange: [0, 0.08]
+      
+      - Identifier: enhanced
+        ColorMappings:
+          # LWQ100 variables (MSI - Sentinel-2)
+          turbidity_mean:
+            ColorBar: "YlOrRd"
+            ValueRange: [0, 150]
+          chla_mean:
+            ColorBar: "YlGn"
+            ValueRange: [0, 75]
+          Rw490_rep:
+            ColorBar: "Blues"
+            ValueRange: [0, 0.15]
+          Rw560_rep:
+            ColorBar: "Greens"
+            ValueRange: [0, 0.15]
+          Rw665_rep:
+            ColorBar: "Reds"
+            ValueRange: [0, 0.15]
+          Rw842_rep:
+            ColorBar: "RdPu"
+            ValueRange: [0, 0.12]
+          Rw1610_rep:
+            ColorBar: "YlOrBr"
+            ValueRange: [0, 0.08]
+          Rw2190_rep:
+            ColorBar: "YlOrBr"
+            ValueRange: [0, 0.08]
+          
+          # LWQ300 variables (OLCI - Sentinel-3)
+          trsp_mean:
+            ColorBar: "YlGnBu"
+            ValueRange: [0, 15]
+          tsm_mean:
+            ColorBar: "YlOrRd"
+            ValueRange: [0, 75]
+          Rw400_rep:
+            ColorBar: "Blues"
+            ValueRange: [0, 0.15]
+          Rw412p5_rep:
+            ColorBar: "Blues"
+            ValueRange: [0, 0.15]
+          Rw442p5_rep:
+            ColorBar: "Blues"
+            ValueRange: [0, 0.15]
+          Rw510_rep:
+            ColorBar: "Greens"
+            ValueRange: [0, 0.15]
+          Rw620_rep:
+            ColorBar: "Oranges"
+            ValueRange: [0, 0.15]
+          Rw681_rep:
+            ColorBar: "Reds"
+            ValueRange: [0, 0.15]
+          Rw709_rep:
+            ColorBar: "RdPu"
+            ValueRange: [0, 0.12]
+
+    ServiceProvider:
+      ProviderName: "WINS Project"
+      ProviderSite: "https://data.dev-wins.com/xcube"
+      IndividualName: "WINS Data Team"
+      PositionName: "Data Manager"

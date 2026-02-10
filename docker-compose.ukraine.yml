@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  ukraine-lwq-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.ukraine
+    image: xcube-ukraine-lwq:latest
+    container_name: xcube-ukraine-service
+    
+    ports:
+      - "8080:8080"
+    
+    environment:
+      # Azure Storage credentials
+      - AZURE_STORAGE_ACCOUNT_NAME=ihpwinsdata
+      - AZURE_STORAGE_ACCOUNT_KEY=<AZURE_STORAGE_ACCOUNT_KEY>
+      - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=ihpwinsdata;AccountKey=<AZURE_STORAGE_ACCOUNT_KEY>;EndpointSuffix=core.windows.net
+      
+      # xcube logging
+      - XCUBE_LOG_LEVEL=INFO
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/datasets"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    labels:
+      - "com.example.description=xcube server for Ukraine Lake Water Quality dataset"
+      - "com.example.service=ukraine-lwq"
+      - "com.example.version=1.0.0"
+
+networks:
+  default:
+    name: xcube-network

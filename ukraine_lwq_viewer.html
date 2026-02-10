@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ukraine Lake Water Quality Viewer</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    
+    <!-- Chart.js for time series visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        #header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        #container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        #map {
+            flex: 1;
+            position: relative;
+        }
+        
+        #sidebar {
+            width: 350px;
+            background: #f8f9fa;
+            border-left: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .control-panel {
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .control-panel h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .control-group select,
+        .control-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .control-group button {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .control-group button:hover {
+            background: #5568d3;
+        }
+        
+        #info-panel {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        #info-panel h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        #selected-location {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #selected-location h4 {
+            font-size: 14px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        #selected-location p {
+            font-size: 13px;
+            color: #666;
+            margin: 5px 0;
+        }
+        
+        #chart-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: 300px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .legend {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            z-index: 1000;
+            font-size: 12px;
+        }
+        
+        .legend h4 {
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 15px;
+            margin-right: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .info-message {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #004085;
+        }
+        
+        @media (max-width: 768px) {
+            #container {
+                flex-direction: column;
+            }
+            
+            #sidebar {
+                width: 100%;
+                max-height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>🌊 Ukraine Lake Water Quality Viewer</h1>
+        <p>Interactive visualization of LWQ100 MSI dataset - Click on map to view time series</p>
+    </div>
+    
+    <div id="container">
+        <div id="map"></div>
+        
+        <div id="sidebar">
+            <div class="control-panel">
+                <h3>⚙️ Controls</h3>
+                
+                <div class="control-group">
+                    <label for="variable-select">Variable:</label>
+                    <select id="variable-select">
+                        <option value="turbidity_mean">Turbidity Mean (FNU)</option>
+                        <option value="Rw490_rep">Water Reflectance 490nm (Blue)</option>
+                        <option value="Rw560_rep">Water Reflectance 560nm (Green)</option>
+                        <option value="Rw665_rep">Water Reflectance 665nm (Red)</option>
+                        <option value="Rw842_rep">Water Reflectance 842nm (NIR)</option>
+                        <option value="Rw1610_rep">Water Reflectance 1610nm (SWIR)</option>
+                        <option value="Rw2190_rep">Water Reflectance 2190nm (SWIR)</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="date-select">Date:</label>
+                    <input type="date" id="date-select" value="2024-01-01">
+                </div>
+                
+                <div class="control-group">
+                    <label for="style-select">Color Style:</label>
+                    <select id="style-select">
+                        <option value="default">Default</option>
+                        <option value="enhanced">Enhanced</option>
+                        <option value="high_turbidity">High Turbidity (Turbidity only)</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="opacity-slider">Opacity: <span id="opacity-value">70%</span></label>
+                    <input type="range" id="opacity-slider" min="0" max="100" value="70">
+                </div>
+                
+                <div class="control-group">
+                    <button id="update-layer">🔄 Update Layer</button>
+                </div>
+            </div>
+            
+            <div id="info-panel">
+                <div class="info-message">
+                    ℹ️ Click anywhere on the map to view time series data for that location
+                </div>
+                
+                <div id="selected-location" style="display: none;">
+                    <h4>📍 Selected Location</h4>
+                    <p><strong>Latitude:</strong> <span id="loc-lat">-</span></p>
+                    <p><strong>Longitude:</strong> <span id="loc-lon">-</span></p>
+                    <p><strong>Latest Value:</strong> <span id="loc-value">-</span></p>
+                </div>
+                
+                <h3>📈 Time Series</h3>
+                <div id="chart-container">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+    
+    <script>
+        // Configuration
+        const CONFIG = {
+            xcubeUrl: 'http://localhost:8080',
+            datasetId: 'ukraine_lwq',
+            defaultCenter: [48.5, 31.3],
+            defaultZoom: 6,
+            maxZoom: 13
+        };
+        
+        // Initialize map
+        const map = L.map('map').setView(CONFIG.defaultCenter, CONFIG.defaultZoom);
+        
+        // Add base layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Data layer variable
+        let dataLayer = null;
+        let currentMarker = null;
+        let timeSeriesChart = null;
+        
+        // Get current selections
+        function getCurrentConfig() {
+            return {
+                variable: document.getElementById('variable-select').value,
+                date: document.getElementById('date-select').value,
+                style: document.getElementById('style-select').value,
+                opacity: document.getElementById('opacity-slider').value / 100
+            };
+        }
+        
+        // Create WMTS tile URL
+        function createTileUrl(config) {
+            return `${CONFIG.xcubeUrl}/wmts/1.0.0/${CONFIG.datasetId}/${config.variable}/${config.style}/${config.date}/EPSG:3857/{z}/{y}/{x}.png`;
+        }
+        
+        // Update data layer
+        function updateDataLayer() {
+            const config = getCurrentConfig();
+            
+            // Remove existing layer
+            if (dataLayer) {
+                map.removeLayer(dataLayer);
+            }
+            
+            // Create new layer
+            dataLayer = L.tileLayer(createTileUrl(config), {
+                attribution: 'Copernicus LWQ100',
+                opacity: config.opacity,
+                maxZoom: CONFIG.maxZoom
+            }).addTo(map);
+        }
+        
+        // Get variable info
+        function getVariableInfo(variableId) {
+            const info = {
+                'turbidity_mean': { unit: 'FNU', label: 'Turbidity' },
+                'Rw490_rep': { unit: 'sr⁻¹', label: 'Reflectance 490nm' },
+                'Rw560_rep': { unit: 'sr⁻¹', label: 'Reflectance 560nm' },
+                'Rw665_rep': { unit: 'sr⁻¹', label: 'Reflectance 665nm' },
+                'Rw842_rep': { unit: 'sr⁻¹', label: 'Reflectance 842nm' },
+                'Rw1610_rep': { unit: 'sr⁻¹', label: 'Reflectance 1610nm' },
+                'Rw2190_rep': { unit: 'sr⁻¹', label: 'Reflectance 2190nm' }
+            };
+            return info[variableId] || { unit: '', label: variableId };
+        }
+        
+        // Fetch time series data
+        async function fetchTimeSeries(lat, lon, variable) {
+            const url = `${CONFIG.xcubeUrl}/timeseries/${CONFIG.datasetId}/${variable}`;
+            
+            // Create GeoJSON Point (note: lon, lat order in GeoJSON)
+            const geojsonPoint = {
+                type: "Point",
+                coordinates: [lon, lat]
+            };
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(geojsonPoint)
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                return data.result;
+            } catch (error) {
+                console.error('Error fetching time series:', error);
+                throw error;
+            }
+        }
+        
+        // Update time series chart
+        function updateChart(timeData, valueData, variable) {
+            const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+            const varInfo = getVariableInfo(variable);
+            
+            // Destroy existing chart
+            if (timeSeriesChart) {
+                timeSeriesChart.destroy();
+            }
+            
+            // Create new chart
+            timeSeriesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeData,
+                    datasets: [{
+                        label: `${varInfo.label} (${varInfo.unit})`,
+                        data: valueData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: `${varInfo.label} (${varInfo.unit})`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Handle map click
+        map.on('click', async function(e) {
+            const lat = e.latlng.lat.toFixed(4);
+            const lon = e.latlng.lng.toFixed(4);
+            const config = getCurrentConfig();
+            
+            // Add/update marker
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+            currentMarker = L.marker(e.latlng).addTo(map);
+            
+            // Show loading state
+            document.getElementById('selected-location').style.display = 'block';
+            document.getElementById('loc-lat').textContent = lat;
+            document.getElementById('loc-lon').textContent = lon;
+            document.getElementById('loc-value').textContent = 'Loading...';
+            
+            try {
+                // Fetch time series data (returns array of {mean, time} objects)
+                const result = await fetchTimeSeries(lat, lon, config.variable);
+                const varInfo = getVariableInfo(config.variable);
+                
+                // Extract time and value arrays
+                const timeArray = result.map(item => item.time);
+                const valueArray = result.map(item => item.mean);
+                
+                // Update location info with latest non-null value
+                const latestValue = valueArray.filter(v => v !== null).slice(-1)[0];
+                if (latestValue !== undefined) {
+                    document.getElementById('loc-value').textContent = 
+                        `${latestValue.toFixed(4)} ${varInfo.unit}`;
+                } else {
+                    document.getElementById('loc-value').textContent = 'No data available';
+                }
+                
+                // Update chart
+                updateChart(timeArray, valueArray, config.variable);
+                
+                // Add popup to marker
+                const validDataCount = valueArray.filter(v => v !== null).length;
+                currentMarker.bindPopup(`
+                    <b>${varInfo.label}</b><br>
+                    Location: ${lat}°N, ${lon}°E<br>
+                    Latest: ${latestValue !== undefined ? latestValue.toFixed(4) : 'N/A'} ${varInfo.unit}<br>
+                    Data points: ${validDataCount} of ${timeArray.length}
+                `).openPopup();
+                
+            } catch (error) {
+                document.getElementById('loc-value').textContent = 'Error loading data';
+                alert('Error fetching time series data. Make sure the xcube server is running at ' + CONFIG.xcubeUrl);
+            }
+        });
+        
+        // Event listeners
+        document.getElementById('update-layer').addEventListener('click', updateDataLayer);
+        
+        document.getElementById('opacity-slider').addEventListener('input', function(e) {
+            const opacity = e.target.value;
+            document.getElementById('opacity-value').textContent = opacity + '%';
+            if (dataLayer) {
+                dataLayer.setOpacity(opacity / 100);
+            }
+        });
+        
+        // Add legend
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <h4>Legend</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(to right, #440154, #31688e, #35b779, #fde724);"></div>
+                    <span>Low → High</span>
+                </div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+        
+        // Initialize with default layer
+        updateDataLayer();
+        
+        // Check server connectivity on load
+        fetch(`${CONFIG.xcubeUrl}/datasets`)
+            .then(response => {
+                if (!response.ok) throw new Error('Server not responding');
+                console.log('✅ Connected to xcube server');
+            })
+            .catch(error => {
+                console.error('❌ Cannot connect to xcube server:', error);
+                alert('Warning: Cannot connect to xcube server at ' + CONFIG.xcubeUrl + '\n\nMake sure to start the server with: ./start_xcube_ukraine.sh');
+            });
+    </script>
+</body>
+</html>

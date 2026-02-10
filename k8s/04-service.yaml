@@ -1,0 +1,23 @@
+# ==============================================================================
+# Kubernetes Service for Ukraine LWQ xcube
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: xcube-ukraine-service
+  namespace: xcube-ukraine
+  labels:
+    app: xcube-ukraine
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: xcube-ukraine
+  sessionAffinity: ClientIP  # Sticky sessions for better performance
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours

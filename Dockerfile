@@ -41,6 +41,12 @@ ENV MAMBA_USER=$NEW_MAMBA_USER
 
 USER $MAMBA_USER
 
+# Configure micromamba for better network resilience
+RUN micromamba config set remote_connect_timeout_secs 30.0 && \
+    micromamba config set remote_read_timeout_secs 120.0 && \
+    micromamba config set remote_max_retries 5 && \
+    micromamba config set remote_backoff_factor 2
+
 # Install xcube dependencies
 COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/environment.yml
 RUN micromamba install -y -n base -f /tmp/environment.yml \
@@ -70,6 +76,9 @@ RUN if [[ ${INSTALL_PLUGINS} == '1' ]]; then bash install-xcube-plugin.sh xcube-
 RUN micromamba clean --all --force-pkgs-dirs --yes
 
 WORKDIR /home/$MAMBA_USER
+
+# Copy examples to the home directory
+COPY --chown=$MAMBA_USER:$MAMBA_USER ./examples ./examples
 
 # The micromamba entrypoint.
 # Allows us to run container as an executable with

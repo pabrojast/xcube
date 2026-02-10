@@ -1,0 +1,10 @@
+# ==============================================================================
+# Kubernetes Namespace for Ukraine LWQ Service
+# ==============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: xcube-ukraine
+  labels:
+    name: xcube-ukraine
+    app: ukraine-lwq-service

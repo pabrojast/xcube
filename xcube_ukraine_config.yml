@@ -1,0 +1,99 @@
+# xcube Configuration for Ukraine Lake Water Quality Dataset (LWQ100)
+# Dataset: ukraine_lwq.zarr from Azure Blob Storage
+# Region: Ukraine
+# Period: 10-day composites from 2024
+
+DataStores:
+  - Identifier: azure_ukraine
+    StoreId: abfs
+    StoreParams:
+      root: "data"
+      storage_options:
+        account_name: "ihpwinsdata"
+        account_key: "<AZURE_STORAGE_ACCOUNT_KEY>"
+
+Datasets:
+  - Identifier: ukraine_lwq
+    Title: "Ukraine Lake Water Quality - LWQ100 MSI"
+    BoundingBox: [22.0, 44.0, 40.5, 52.5]  # Approximate bounding box for Ukraine
+    StoreInstanceId: azure_ukraine
+    Path: "xcube/c_gls_LWQ100/ukraine/ukraine_lwq.zarr"
+    Style: default
+    
+    # Note: Zoom levels 6-7 show lake data best
+    # Zoom 8+ will generate empty tiles (lakes too small/dispersed)
+    # Use viewer with maxZoom: 7 to prevent empty tiles
+    
+    # Open parameters to specify data type explicitly
+    FileSystem: zarr
+    
+    AccessControl:
+      RequiredScopes: []
+  
+  - Identifier: ukraine_lwq300
+    Title: "Ukraine Lake Water Quality - LWQ300 MSI"
+    BoundingBox: [22.0, 44.0, 40.5, 52.5]  # Approximate bounding box for Ukraine
+    StoreInstanceId: azure_ukraine
+    Path: "xcube/c_gls_LWQ300/ukraine/ukraine_lwq.zarr"
+    Style: default
+    
+    # Note: Zoom levels 6-7 show lake data best
+    # Zoom 8+ will generate empty tiles (lakes too small/dispersed)
+    # Use viewer with maxZoom: 7 to prevent empty tiles
+    
+    # Open parameters to specify data type explicitly
+    FileSystem: zarr
+    
+    AccessControl:
+      RequiredScopes: []
+
+# Styles Configuration with ColorMappings for each variable
+Styles:
+  - Identifier: default
+    ColorMappings:
+      turbidity_mean:
+        ColorBar: "viridis"
+        ValueRange: [0, 100]
+      Rw490_rep:
+        ColorBar: "plasma"
+        ValueRange: [0, 0.1]
+      Rw560_rep:
+        ColorBar: "plasma"
+        ValueRange: [0, 0.1]
+      Rw665_rep:
+        ColorBar: "plasma"
+        ValueRange: [0, 0.1]
+      Rw842_rep:
+        ColorBar: "plasma"
+        ValueRange: [0, 0.08]
+      Rw1610_rep:
+        ColorBar: "plasma"
+        ValueRange: [0, 0.05]
+      Rw2190_rep:
+        ColorBar: "plasma"
+        ValueRange: [0, 0.05]
+  
+  - Identifier: enhanced
+    ColorMappings:
+      turbidity_mean:
+        ColorBar: "YlOrRd"
+        ValueRange: [0, 150]
+      Rw490_rep:
+        ColorBar: "Blues"
+        ValueRange: [0, 0.15]
+      Rw560_rep:
+        ColorBar: "Greens"
+        ValueRange: [0, 0.15]
+      Rw665_rep:
+        ColorBar: "Reds"
+        ValueRange: [0, 0.15]
+      Rw842_rep:
+        ColorBar: "RdPu"
+        ValueRange: [0, 0.12]
+      Rw1610_rep:
+        ColorBar: "YlOrBr"
+        ValueRange: [0, 0.08]
+      Rw2190_rep:
+        ColorBar: "YlOrBr"
+        ValueRange: [0, 0.08]
+

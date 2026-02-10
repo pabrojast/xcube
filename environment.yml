@@ -37,6 +37,7 @@ dependencies:
   - rfc3339-validator >=0.1  # for python-jsonschema date-time format validation
   - rioxarray >=0.11
   - s3fs >=2021.6
+  - adlfs
   - setuptools >=41.0
   - shapely >=1.6
   - tabulate >=0.9
