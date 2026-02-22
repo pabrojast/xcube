@@ -1,0 +1,64 @@
+
+sudo docker inspect xcube-ukraine-chl-service --format 'OOMKilled={{.State.OOMKilled}} ExitCode={{.State.ExitCode}} Running={{.State.Running}}'
+
+ sudo docker cp ./compute_ukraine_chl_virtual_dataset.py xcube-ukraine-chl-service:/home/xcube/ukraine_chl_service/ compute_ukraine_chl_virtual_dataset.py
+
+  sudo docker cp ./compute_ukraine_chl_virtual_dataset.py xcube-ukraine-chl-service:/home/xcube/ukraine_chl_service/compute_ukraine_chl_virtual_dataset.py
+
+    sudo docker cp ./compute_ukraine_chl_virtual_dataset.py xcube-
+  ukraine-chl-service:/home/xcube/ukraine_chl_service/
+  compute_ukraine_chl_virtual_dataset.py
+
+  sudo docker cp ./xcube/webapi/datasets/controllers.py xcube-ukraine-chl-service:/opt/conda/lib/python3.13/site-packages/xcube/webapi/datasets/controllers.py
+
+  Luego Docker:
+
+  cd ~/Proyectos/xcube
+  sudo ./docker_ukraine_chl.sh clean
+  sudo ./docker_ukraine_chl.sh build
+  sudo CPU_LIMIT=1 MEM_LIMIT=5g MEM_SWAP=8g NO_HEALTHCHECK=1 ./
+  docker_ukraine_chl.sh run
+  sudo ./docker_ukraine_chl.sh test-basic
+  sudo TEST_MAX_VALIDS=50 TEST_START_DATE=2024-01-01
+  TEST_END_DATE=2024-02-01 TEST_TIMEOUT_SECS=180 ./
+  docker_ukraine_chl.sh test-area
+
+  sudo CPU_LIMIT=1 MEM_LIMIT=5g MEM_SWAP=8g NO_HEALTHCHECK=1 ./docker_ukraine_chl.sh run
+  sudo TEST_START_DATE=2024-01-01 TEST_END_DATE=2024-02-01 TEST_PRECOMPUTED_PRODUCT=ua_chl  TEST_PRECOMPUTED_AREA=kyiv_reservoir ./docker_ukraine_chl.sh test-precomputed
+
+    sudo ./docker_ukraine_chl.sh clean
+  sudo CPU_LIMIT=1 MEM_LIMIT=5g MEM_SWAP=8g NO_HEALTHCHECK=1 ./
+  docker_ukraine_chl.sh run
+  sudo ./docker_ukraine_chl.sh inspect-precomputed
+  sudo TEST_START_DATE=2024-01-01 TEST_END_DATE=2024-02-01
+  TEST_PRECOMPUTED_PRODUCT=ua_chl
+  TEST_PRECOMPUTED_AREA=kyiv_reservoir ./docker_ukraine_chl.sh test-
+  precomputed
+
+  echo 'pabrojast ALL=(root) NOPASSWD: /usr/bin/docker' | sudo tee /etc/sudoers.d/pabrojast-docker
+  sudo chmod 440 /etc/sudoers.d/pabrojast-docker
+  sudo -n docker ps
+
+  sudo CPU_LIMIT=1 MEM_LIMIT=5g MEM_SWAP=8g NO_HEALTHCHECK=1 ./docker_ukraine_chl.sh run
+   sudo CPU_LIMIT=1 MEM_LIMIT=5g MEM_SWAP=8g NO_HEALTHCHECK=1 ./docker_ukraine_chl.sh run
+     sudo TEST_MAX_VALIDS=50 TEST_START_DATE=2024-01-01
+  TEST_END_DATE=2024-02-01 TEST_TIMEOUT_SECS=180 ./docker_ukraine_chl.sh test-area
+
+
+MONTHLY_OVERWRITE=1 MONTHLY_GENERATE_LEVELS=1 ./docker_ukraine_chl.sh build-monthly-store
+
+
+ PYTHONPATH=/home/pabrojast/Proyectos/xcube \
+  /home/pabrojast/Proyectos/stacprocess-ihp/.venv/bin/python -m  xcube.cli.main level \
+  /home/pabrojast/Proyectos/stacprocess-ihp/data/terrascope_all_grids_full_history_zarr/chl_mosaic_monthly.zarr \
+  --output /home/pabrojast/Proyectos/stacprocess-ihp/data/terrascope_all_grids_full_history_zarr/chl_mosaic_monthly.levels \
+  --link --replace --tile-size 256 --agg-methods mean -v
+
+/home/pabrojast/Proyectos/stacprocess-ihp/.venv/bin/python -m pip install --upgrade "zarr>=2.18.2,<3" jsonschema rfc3339- validator
+
+
+  PYTHONPATH=/home/pabrojast/Proyectos/xcube \
+  /home/pabrojast/Proyectos/stacprocess-ihp/.venv/bin/python -m xcube.cli.main level \
+  ../stacprocess-ihp/data/terrascope_all_grids_full_history_zarr/chl_mosaic_monthly.zarr \
+  --output ../stacprocess-ihp/data/terrascope_all_grids_full_history_zarr/chl_mosaic_monthly.levels \
+  --link --replace --tile-size 256 --agg-methods mean -v
