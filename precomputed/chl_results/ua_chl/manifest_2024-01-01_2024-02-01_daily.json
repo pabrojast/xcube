@@ -1,0 +1,33 @@
+{
+  "productId": "ua_chl",
+  "productKey": "ua_chl",
+  "datasetId": "ua_chl_virtual_stations",
+  "varName": "CHL",
+  "timeGrain": "daily",
+  "startDate": "2024-01-01",
+  "endDate": "2024-02-01",
+  "requestedStartDate": "2024-01-01",
+  "requestedEndDate": "2024-02-01",
+  "availableStartTime": null,
+  "availableEndTime": null,
+  "items": [
+    {
+      "file": "ua_chl__kyiv_reservoir__2024-01-01_2024-02-01__daily.json",
+      "areaId": "kyiv_reservoir",
+      "areaName": "Kyiv Reservoir",
+      "areaType": "reservoir",
+      "hasData": true,
+      "rows": 2,
+      "requestsFailed": 0
+    },
+    {
+      "file": "ua_chl__kremenchuk_reservoir__2024-01-01_2024-02-01__daily.json",
+      "areaId": "kremenchuk_reservoir",
+      "areaName": "Kremenchuk Reservoir",
+      "areaType": "reservoir",
+      "hasData": true,
+      "rows": 4,
+      "requestsFailed": 0
+    }
+  ]
+}

@@ -10,7 +10,20 @@ PORT="${PORT:-8080}"
 DATA_DIR="${DATA_DIR:-/home/pabrojast/Proyectos/stacprocess-ihp/data/terrascope_all_grids_full_history_zarr}"
 DATASET_ID="${DATASET_ID:-ua_chl_virtual_stations}"
 VARIABLE_NAME="${VARIABLE_NAME:-CHL}"
+DAILY_DATASET_ID="${DAILY_DATASET_ID:-ua_chl_daily}"
 WMTS_DEFAULT_DATASET_ID="${WMTS_DEFAULT_DATASET_ID:-ua_chl_monthly}"
+DATA_STORE_ID="${DATA_STORE_ID:-file}"
+STORE_IDENTIFIER="${STORE_IDENTIFIER:-}"
+STORE_ROOT="${STORE_ROOT:-}"
+RUNTIME_CONFIG_PATH="${RUNTIME_CONFIG_PATH:-$SCRIPT_DIR/.generated/xcube_ukraine_chl_runtime_config.yml}"
+ABFS_TILE_IDS="${ABFS_TILE_IDS:-36TVS,36TWS,36TWT,36TXT,36UUA,36UUB,36UUV,36UVV,36UWU,36UWV,36UXU}"
+ABFS_ACCOUNT_NAME_TEMPLATE="${ABFS_ACCOUNT_NAME_TEMPLATE:-\${AZURE_STORAGE_ACCOUNT_NAME}}"
+ABFS_ACCOUNT_KEY_TEMPLATE="${ABFS_ACCOUNT_KEY_TEMPLATE:-\${AZURE_STORAGE_ACCOUNT_KEY}}"
+ABFS_CONNECTION_STRING_TEMPLATE="${ABFS_CONNECTION_STRING_TEMPLATE:-}"
+ABFS_ANON="${ABFS_ANON:-0}"
+AZURE_STORAGE_ACCOUNT_NAME="${AZURE_STORAGE_ACCOUNT_NAME:-}"
+AZURE_STORAGE_ACCOUNT_KEY="${AZURE_STORAGE_ACCOUNT_KEY:-}"
+AZURE_STORAGE_CONNECTION_STRING="${AZURE_STORAGE_CONNECTION_STRING:-}"
 CPU_LIMIT="${CPU_LIMIT:-2}"
 MEM_LIMIT="${MEM_LIMIT:-4g}"
 MEM_SWAP="${MEM_SWAP:-6g}"
@@ -18,8 +31,20 @@ PID_LIMIT="${PID_LIMIT:-256}"
 BUILD_NICE_LEVEL="${BUILD_NICE_LEVEL:-15}"
 NO_HEALTHCHECK="${NO_HEALTHCHECK:-1}"
 RAW_LEVELS_STORE="${RAW_LEVELS_STORE:-chl_mosaic_ts.levels}"
+DAILY_MOSAIC_STORE="${DAILY_MOSAIC_STORE:-chl_mosaic_daily.zarr}"
+DAILY_LEVELS_STORE="${DAILY_LEVELS_STORE:-chl_mosaic_daily.levels}"
 MONTHLY_MOSAIC_STORE="${MONTHLY_MOSAIC_STORE:-chl_mosaic_monthly.zarr}"
 MONTHLY_LEVELS_STORE="${MONTHLY_LEVELS_STORE:-chl_mosaic_monthly.levels}"
+DAILY_PYTHON_BIN="${DAILY_PYTHON_BIN:-/home/pabrojast/Proyectos/stacprocess-ihp/.venv/bin/python}"
+DAILY_CHUNKS="${DAILY_CHUNKS:-time=1,y=256,x=256}"
+DAILY_FREQ="${DAILY_FREQ:-D}"
+DAILY_OVERWRITE="${DAILY_OVERWRITE:-0}"
+DAILY_CONSOLIDATE="${DAILY_CONSOLIDATE:-1}"
+DAILY_GENERATE_LEVELS="${DAILY_GENERATE_LEVELS:-1}"
+DAILY_LEVELS_LINK="${DAILY_LEVELS_LINK:-1}"
+DAILY_LEVELS_REPLACE="${DAILY_LEVELS_REPLACE:-1}"
+DAILY_LEVELS_TILE_SIZE="${DAILY_LEVELS_TILE_SIZE:-256}"
+DAILY_LEVELS_AGG_METHODS="${DAILY_LEVELS_AGG_METHODS:-mean}"
 MONTHLY_PYTHON_BIN="${MONTHLY_PYTHON_BIN:-/home/pabrojast/Proyectos/stacprocess-ihp/.venv/bin/python}"
 MONTHLY_CHUNKS="${MONTHLY_CHUNKS:-time=1,y=256,x=256}"
 MONTHLY_FREQ="${MONTHLY_FREQ:-MS}"
@@ -74,6 +99,7 @@ Usage: ./docker_ukraine_chl.sh <command>
 Commands:
   build      Build image and embed local Terrascope CHL Zarr tiles
   run        Run container (replaces previous one if it exists)
+  run-azure  Run container using Azure Blob/ABFS as data source
   stop       Stop container
   logs       Show container logs
   status     Show container status
@@ -82,6 +108,7 @@ Commands:
   test-precomputed Check static /precomputed JSON endpoint for one reference area
   inspect-precomputed List precomputed JSON files visible inside the container
   precompute-full Regenerate reference-area precomputed JSON for full available range (auto)
+  build-daily-store Build daily CHL mosaic/levels from raw CHL mosaic (host data dir)
   build-monthly-store Build monthly CHL mosaic/levels from raw CHL mosaic (host data dir)
   test-area-batch Run batched area timeseries (split by time + bbox tiles)
   clean      Remove container
@@ -89,6 +116,18 @@ Commands:
 
 Environment overrides:
   DATA_DIR=/path/to/terrascope_all_grids_full_history_zarr
+  DATA_STORE_ID=file|abfs
+  STORE_IDENTIFIER=terrascope_chl_local|terrascope_chl_abfs
+  STORE_ROOT=/local/path or data/xcube/terrascope_all_grids_full_history_zarr
+  RUNTIME_CONFIG_PATH=./.generated/xcube_ukraine_chl_runtime_config.yml
+  ABFS_TILE_IDS=36TVS,36TWS,...
+  ABFS_ACCOUNT_NAME_TEMPLATE=\${AZURE_STORAGE_ACCOUNT_NAME}
+  ABFS_ACCOUNT_KEY_TEMPLATE=\${AZURE_STORAGE_ACCOUNT_KEY}
+  ABFS_CONNECTION_STRING_TEMPLATE=\${AZURE_STORAGE_CONNECTION_STRING}
+  ABFS_ANON=0|1
+  AZURE_STORAGE_ACCOUNT_NAME=...
+  AZURE_STORAGE_ACCOUNT_KEY=...
+  AZURE_STORAGE_CONNECTION_STRING=...
   PORT=8080
   IMAGE_NAME=xcube-ukraine-chl
   IMAGE_TAG=latest
@@ -98,10 +137,23 @@ Environment overrides:
   PID_LIMIT=256
   BUILD_NICE_LEVEL=15
   NO_HEALTHCHECK=1
+  DAILY_DATASET_ID=ua_chl_daily
   WMTS_DEFAULT_DATASET_ID=ua_chl_monthly
   RAW_LEVELS_STORE=chl_mosaic_ts.levels
+  DAILY_MOSAIC_STORE=chl_mosaic_daily.zarr
+  DAILY_LEVELS_STORE=chl_mosaic_daily.levels
   MONTHLY_MOSAIC_STORE=chl_mosaic_monthly.zarr
   MONTHLY_LEVELS_STORE=chl_mosaic_monthly.levels
+  DAILY_PYTHON_BIN=/home/pabrojast/Proyectos/stacprocess-ihp/.venv/bin/python
+  DAILY_CHUNKS=time=1,y=256,x=256
+  DAILY_FREQ=D
+  DAILY_OVERWRITE=0
+  DAILY_CONSOLIDATE=1
+  DAILY_GENERATE_LEVELS=1
+  DAILY_LEVELS_LINK=1
+  DAILY_LEVELS_REPLACE=1
+  DAILY_LEVELS_TILE_SIZE=256
+  DAILY_LEVELS_AGG_METHODS=mean
   MONTHLY_PYTHON_BIN=/home/pabrojast/Proyectos/stacprocess-ihp/.venv/bin/python
   MONTHLY_CHUNKS=time=1,y=256,x=256
   MONTHLY_FREQ=MS
@@ -193,6 +245,12 @@ build_image() {
     echo "Monthly levels NOT detected: $DATA_DIR/$MONTHLY_LEVELS_STORE"
     echo "  -> WMTS default-friendly monthly layer (ua_chl_monthly) will not be published."
   fi
+  if [ -f "$DATA_DIR/$DAILY_LEVELS_STORE/.zlevels" ]; then
+    echo "Daily levels detected: $DATA_DIR/$DAILY_LEVELS_STORE"
+  else
+    echo "Daily levels NOT detected: $DATA_DIR/$DAILY_LEVELS_STORE"
+    echo "  -> Daily layer (ua_chl_daily) will not be published."
+  fi
   echo "Building image ${IMAGE_NAME}:${IMAGE_TAG}"
   echo "Data source: $DATA_DIR"
 
@@ -214,8 +272,56 @@ build_image() {
     .
 }
 
+generate_runtime_config() {
+  local config_cmd
+  mkdir -p "$(dirname "$RUNTIME_CONFIG_PATH")"
+
+  config_cmd=(
+    python3 "$SCRIPT_DIR/generate_ukraine_chl_xcube_config.py"
+    --zarr-root "$DATA_DIR"
+    --allow-missing-zarr-root
+    --store-id "$DATA_STORE_ID"
+    --tile-ids "$ABFS_TILE_IDS"
+    --output "$RUNTIME_CONFIG_PATH"
+    --compute-script /home/xcube/ukraine_chl_service/compute_ukraine_chl_virtual_dataset.py
+    --raw-dataset-id "$DATASET_ID"
+    --daily-dataset-id "$DAILY_DATASET_ID"
+    --monthly-dataset-id "$WMTS_DEFAULT_DATASET_ID"
+    --levels-store "$RAW_LEVELS_STORE"
+    --daily-levels-store "$DAILY_LEVELS_STORE"
+    --daily-mosaic-store "$DAILY_MOSAIC_STORE"
+    --monthly-levels-store "$MONTHLY_LEVELS_STORE"
+    --monthly-mosaic-store "$MONTHLY_MOSAIC_STORE"
+    --show-raw-when-monthly
+    --precomputed-dir "$PRECOMPUTED_CONTAINER_DIR"
+    --precomputed-route "$PRECOMPUTED_ROUTE"
+  )
+
+  if [ -n "$STORE_IDENTIFIER" ]; then
+    config_cmd+=(--store-identifier "$STORE_IDENTIFIER")
+  fi
+  if [ -n "$STORE_ROOT" ]; then
+    config_cmd+=(--store-root "$STORE_ROOT")
+  fi
+
+  if [ "$DATA_STORE_ID" = "abfs" ]; then
+    if [ "$ABFS_ANON" = "1" ]; then
+      config_cmd+=(--abfs-anon)
+    elif [ -n "$ABFS_CONNECTION_STRING_TEMPLATE" ]; then
+      config_cmd+=(--abfs-connection-string "$ABFS_CONNECTION_STRING_TEMPLATE")
+    else
+      config_cmd+=(--abfs-account-name "$ABFS_ACCOUNT_NAME_TEMPLATE")
+      config_cmd+=(--abfs-account-key "$ABFS_ACCOUNT_KEY_TEMPLATE")
+    fi
+  fi
+
+  echo "Generating runtime config ($DATA_STORE_ID): $RUNTIME_CONFIG_PATH"
+  "${config_cmd[@]}"
+}
+
 run_container() {
   ensure_docker
+  local runtime_config_container
   if docker ps -a --format '{{.Names}}' | grep -Fxq "$CONTAINER_NAME"; then
     docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
   fi
@@ -251,11 +357,49 @@ run_container() {
     echo "Using precomputed files bundled in image (PRECOMPUTED_BIND_MOUNT=0)"
   fi
 
-  docker run "${RUN_ARGS[@]}" "${IMAGE_NAME}:${IMAGE_TAG}"
+  if [ "$DATA_STORE_ID" = "abfs" ]; then
+    runtime_config_container="/home/xcube/ukraine_chl_service/xcube_ukraine_chl_runtime_config.yml"
+    if [ "$ABFS_ANON" != "1" ]; then
+      if [ -n "$ABFS_CONNECTION_STRING_TEMPLATE" ] && [ -z "$AZURE_STORAGE_CONNECTION_STRING" ]; then
+        echo "WARNING: ABFS uses connection string template but AZURE_STORAGE_CONNECTION_STRING is empty."
+      fi
+      if [ -z "$ABFS_CONNECTION_STRING_TEMPLATE" ] && { [ -z "$AZURE_STORAGE_ACCOUNT_NAME" ] || [ -z "$AZURE_STORAGE_ACCOUNT_KEY" ]; }; then
+        echo "WARNING: ABFS uses account/key templates but AZURE_STORAGE_ACCOUNT_NAME or AZURE_STORAGE_ACCOUNT_KEY is empty."
+      fi
+    fi
+    generate_runtime_config
+    RUN_ARGS+=(-v "${RUNTIME_CONFIG_PATH}:${runtime_config_container}:ro")
+    if [ -n "$AZURE_STORAGE_ACCOUNT_NAME" ]; then
+      RUN_ARGS+=(-e "AZURE_STORAGE_ACCOUNT_NAME=${AZURE_STORAGE_ACCOUNT_NAME}")
+    fi
+    if [ -n "$AZURE_STORAGE_ACCOUNT_KEY" ]; then
+      RUN_ARGS+=(-e "AZURE_STORAGE_ACCOUNT_KEY=${AZURE_STORAGE_ACCOUNT_KEY}")
+    fi
+    if [ -n "$AZURE_STORAGE_CONNECTION_STRING" ]; then
+      RUN_ARGS+=(-e "AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING}")
+    fi
+    docker run "${RUN_ARGS[@]}" "${IMAGE_NAME}:${IMAGE_TAG}" \
+      xcube serve \
+      --config "$runtime_config_container" \
+      --address 0.0.0.0 \
+      --port 8080 \
+      --verbose
+  else
+    docker run "${RUN_ARGS[@]}" "${IMAGE_NAME}:${IMAGE_TAG}"
+  fi
   echo "Container started: $CONTAINER_NAME"
   echo "Datasets URL: http://localhost:${PORT}/datasets"
   echo "Precomputed URL base: http://localhost:${PORT}${PRECOMPUTED_ROUTE}"
+  echo "Daily layer (if published): ${DAILY_DATASET_ID}.${VARIABLE_NAME}"
   echo "WMTS default layer (if published): ${WMTS_DEFAULT_DATASET_ID}.${VARIABLE_NAME}"
+  if [ "$DATA_STORE_ID" = "abfs" ]; then
+    echo "Data source mode: ABFS (Azure Blob)"
+    if [ -n "$STORE_ROOT" ]; then
+      echo "ABFS root: $STORE_ROOT"
+    fi
+  else
+    echo "Data source mode: file (embedded/local)"
+  fi
 }
 
 test_area() {
@@ -526,6 +670,116 @@ PY
   echo "  - $monthly_levels"
 }
 
+build_daily_store() {
+  local py_bin
+  local raw_mosaic
+  local daily_mosaic
+  local daily_levels
+  local daily_mosaic_rel
+  local daily_levels_rel
+  local cmd
+  local level_cmd
+
+  py_bin="$DAILY_PYTHON_BIN"
+  if [ ! -x "$py_bin" ]; then
+    py_bin="python3"
+  fi
+
+  raw_mosaic="$DATA_DIR/chl_mosaic_ts.zarr"
+  daily_mosaic="$DATA_DIR/$DAILY_MOSAIC_STORE"
+  daily_levels="$DATA_DIR/$DAILY_LEVELS_STORE"
+
+  if [ ! -d "$raw_mosaic" ]; then
+    echo "Raw mosaic not found: $raw_mosaic"
+    exit 1
+  fi
+
+  cmd=(
+    "$py_bin" scripts/chl_mosaic_to_daily_zarr.py
+    --input "$raw_mosaic"
+    --output "$daily_mosaic"
+    --freq "$DAILY_FREQ"
+    --chunks "$DAILY_CHUNKS"
+    --log-level INFO
+  )
+  if [ "$DAILY_OVERWRITE" = "1" ]; then
+    cmd+=(--overwrite)
+  fi
+  if [ "$DAILY_CONSOLIDATE" = "1" ]; then
+    cmd+=(--consolidate)
+  fi
+
+  echo "Building daily mosaic store..."
+  echo "  python: $py_bin"
+  echo "  input:  $raw_mosaic"
+  echo "  output: $daily_mosaic"
+  "${cmd[@]}"
+
+  if [ "$DAILY_GENERATE_LEVELS" != "1" ]; then
+    echo "Skipping daily levels generation (DAILY_GENERATE_LEVELS=0)."
+    return 0
+  fi
+
+  if ! PYTHONPATH="$SCRIPT_DIR${PYTHONPATH:+:$PYTHONPATH}" "$py_bin" - <<'PY' >/dev/null 2>&1
+import importlib
+for mod in ("xcube.cli.main", "jsonschema", "rfc3339_validator"):
+    importlib.import_module(mod)
+import zarr
+major = int(str(zarr.__version__).split(".", maxsplit=1)[0])
+if major >= 3:
+    raise RuntimeError(
+        f"Incompatible zarr version {zarr.__version__}; xcube level requires zarr<3"
+    )
+PY
+  then
+    echo "Missing Python dependencies for 'xcube level' in: $py_bin"
+    echo "Install with:"
+    echo "  $py_bin -m pip install jsonschema rfc3339-validator 'zarr<3'"
+    exit 1
+  fi
+
+  echo "Building daily .levels pyramid..."
+  echo "  output: $daily_levels"
+  daily_mosaic_rel="$(python3 - <<PY
+import os
+print(os.path.relpath("$daily_mosaic", os.getcwd()))
+PY
+)"
+  daily_levels_rel="$(python3 - <<PY
+import os
+print(os.path.relpath("$daily_levels", os.getcwd()))
+PY
+)"
+  echo "  input (relative):  $daily_mosaic_rel"
+  echo "  output (relative): $daily_levels_rel"
+
+  level_cmd=(
+    "$py_bin" -m xcube.cli.main level "$daily_mosaic_rel"
+    --output "$daily_levels_rel"
+    --tile-size "$DAILY_LEVELS_TILE_SIZE"
+    --agg-methods "$DAILY_LEVELS_AGG_METHODS"
+  )
+  if [ "$DAILY_LEVELS_LINK" = "1" ]; then
+    level_cmd+=(--link)
+  fi
+  if [ "$DAILY_LEVELS_REPLACE" = "1" ]; then
+    level_cmd+=(--replace)
+  fi
+
+  if PYTHONPATH="$SCRIPT_DIR${PYTHONPATH:+:$PYTHONPATH}" "${level_cmd[@]}"; then
+    :
+  else
+    echo "Failed to run xcube level with '$py_bin'."
+    echo "Hint: use DAILY_PYTHON_BIN with an environment that has xcube deps,"
+    echo "e.g. /home/pabrojast/Proyectos/stacprocess-ihp/.venv/bin/python"
+    exit 1
+  fi
+
+  echo "Daily store ready:"
+  echo "  - $daily_mosaic"
+  echo "  - $daily_levels"
+}
+
 precompute_full() {
   ensure_docker
   local base_url
@@ -602,6 +856,13 @@ test_basic() {
   else
     echo "   Not available (monthly store not published)."
   fi
+
+  echo "6) /datasets/${DAILY_DATASET_ID} (optional daily layer)"
+  if curl -fsS --max-time "$TEST_TIMEOUT_SECS" "${base_url}/datasets/${DAILY_DATASET_ID}" | jq '.id, .title'; then
+    :
+  else
+    echo "   Not available (daily store not published)."
+  fi
 }
 
 COMMAND="${1:-help}"
@@ -611,6 +872,10 @@ case "$COMMAND" in
     build_image
     ;;
   run)
+    run_container
+    ;;
+  run-azure)
+    DATA_STORE_ID="abfs"
     run_container
     ;;
   stop)
@@ -636,6 +901,9 @@ case "$COMMAND" in
     ;;
   precompute-full)
     precompute_full
+    ;;
+  build-daily-store)
+    build_daily_store
     ;;
   build-monthly-store)
     build_monthly_store

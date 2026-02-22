@@ -1,0 +1,66 @@
+{
+  "contract": "xcube-calculations/v1",
+  "operation": "timeseries-batch-client",
+  "datasetId": "ua_chl_virtual_stations",
+  "varName": "CHL",
+  "hasData": true,
+  "summary": {
+    "rows": 2,
+    "sourceRows": 2,
+    "requestsTotal": 5,
+    "requestsFailed": 0,
+    "windows": 5,
+    "tiles": 1
+  },
+  "query": {
+    "aggMethods": [
+      "mean",
+      "count"
+    ],
+    "startDate": "2024-01-01",
+    "endDate": "2024-02-01",
+    "timeGrain": "daily",
+    "maxValids": 60,
+    "monthsPerRequest": 1,
+    "daysPerRequest": 7,
+    "bbox": [
+      30.3,
+      50.65,
+      30.95,
+      51.05
+    ],
+    "tilesX": 1,
+    "tilesY": 1,
+    "timeoutSecs": 180,
+    "requestedStartDate": "2024-01-01",
+    "requestedEndDate": "2024-02-01"
+  },
+  "result": [
+    {
+      "time": "2024-01-12",
+      "mean": 550.3640747070312,
+      "count": 1.0
+    },
+    {
+      "time": "2024-01-17",
+      "mean": 412.4697265625,
+      "count": 1.0
+    }
+  ],
+  "product": {
+    "id": "ua_chl",
+    "datasetId": "ua_chl_virtual_stations",
+    "variable": "CHL"
+  },
+  "area": {
+    "id": "kyiv_reservoir",
+    "name": "Kyiv Reservoir",
+    "type": "reservoir",
+    "bbox": [
+      30.3,
+      50.65,
+      30.95,
+      51.05
+    ]
+  }
+}

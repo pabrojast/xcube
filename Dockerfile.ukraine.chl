@@ -83,11 +83,14 @@ RUN python /home/$MAMBA_USER/ukraine_chl_service/generate_ukraine_chl_xcube_conf
     --output /home/$MAMBA_USER/ukraine_chl_service/xcube_ukraine_chl_local_config.yml \
     --compute-script /home/$MAMBA_USER/ukraine_chl_service/compute_ukraine_chl_virtual_dataset.py \
     --raw-dataset-id ua_chl_virtual_stations \
+    --daily-dataset-id ua_chl_daily \
     --monthly-dataset-id ua_chl_monthly \
     --levels-store chl_mosaic_ts.levels \
+    --daily-levels-store chl_mosaic_daily.levels \
+    --daily-mosaic-store chl_mosaic_daily.zarr \
     --monthly-levels-store chl_mosaic_monthly.levels \
     --monthly-mosaic-store chl_mosaic_monthly.zarr \
-    --hide-raw-when-monthly \
+    --show-raw-when-monthly \
     --precomputed-dir /home/$MAMBA_USER/ukraine_chl_service/precomputed/chl_results \
     --precomputed-route /precomputed && \
     rm /home/$MAMBA_USER/ukraine_chl_service/generate_ukraine_chl_xcube_config.py
