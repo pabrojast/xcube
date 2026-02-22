@@ -12,3 +12,6 @@ It is based on popular data science packages such as
 [xarray](http://xarray.pydata.org/), [Zarr](https://zarr.readthedocs.io/), and [Dask](https://dask.org/).
 
 Find out more in the [xcube Documentation](https://xcube.readthedocs.io).
+
+For Terria integrations that consume WMTS + calculation endpoints, see
+[`CALCULATIONS_CONTRACT.md`](./CALCULATIONS_CONTRACT.md).

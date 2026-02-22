@@ -47,6 +47,10 @@ data:
         BoundingBox: [22.0, 44.0, 40.5, 52.5]
         StoreInstanceId: azure_ukraine
         Path: "xcube/c_gls_LWQ100/ukraine/ukraine_lwq100_orig.levels"
+        # RHOB/RHOW-like reflectance variables disabled.
+        Variables:
+          - turbidity_mean
+          - chla_mean
         Style: default
         
         # Pyramid info:
@@ -67,6 +71,10 @@ data:
         BoundingBox: [22.0, 44.0, 40.5, 52.5]
         StoreInstanceId: azure_ukraine
         Path: "xcube/c_gls_LWQ300/ukraine/ukraine_lwq300_orig.levels"
+        # RHOB/RHOW-like reflectance variables disabled.
+        Variables:
+          - trsp_mean
+          - tsm_mean
         Style: default
         
         # Pyramid info:
@@ -114,24 +122,6 @@ data:
           chla_mean:
             ColorBar: "viridis"
             ValueRange: [0, 50]
-          Rw490_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.1]
-          Rw560_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.1]
-          Rw665_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.1]
-          Rw842_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.08]
-          Rw1610_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.05]
-          Rw2190_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.05]
           
           # LWQ300 variables (OLCI - Sentinel-3)
           trsp_mean:
@@ -140,27 +130,6 @@ data:
           tsm_mean:
             ColorBar: "viridis"
             ValueRange: [0, 50]
-          Rw400_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.1]
-          Rw412p5_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.1]
-          Rw442p5_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.1]
-          Rw510_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.1]
-          Rw620_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.1]
-          Rw681_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.1]
-          Rw709_rep:
-            ColorBar: "plasma"
-            ValueRange: [0, 0.08]
       
       - Identifier: enhanced
         ColorMappings:
@@ -171,24 +140,6 @@ data:
           chla_mean:
             ColorBar: "YlGn"
             ValueRange: [0, 75]
-          Rw490_rep:
-            ColorBar: "Blues"
-            ValueRange: [0, 0.15]
-          Rw560_rep:
-            ColorBar: "Greens"
-            ValueRange: [0, 0.15]
-          Rw665_rep:
-            ColorBar: "Reds"
-            ValueRange: [0, 0.15]
-          Rw842_rep:
-            ColorBar: "RdPu"
-            ValueRange: [0, 0.12]
-          Rw1610_rep:
-            ColorBar: "YlOrBr"
-            ValueRange: [0, 0.08]
-          Rw2190_rep:
-            ColorBar: "YlOrBr"
-            ValueRange: [0, 0.08]
           
           # LWQ300 variables (OLCI - Sentinel-3)
           trsp_mean:
@@ -197,27 +148,6 @@ data:
           tsm_mean:
             ColorBar: "YlOrRd"
             ValueRange: [0, 75]
-          Rw400_rep:
-            ColorBar: "Blues"
-            ValueRange: [0, 0.15]
-          Rw412p5_rep:
-            ColorBar: "Blues"
-            ValueRange: [0, 0.15]
-          Rw442p5_rep:
-            ColorBar: "Blues"
-            ValueRange: [0, 0.15]
-          Rw510_rep:
-            ColorBar: "Greens"
-            ValueRange: [0, 0.15]
-          Rw620_rep:
-            ColorBar: "Oranges"
-            ValueRange: [0, 0.15]
-          Rw681_rep:
-            ColorBar: "Reds"
-            ValueRange: [0, 0.15]
-          Rw709_rep:
-            ColorBar: "RdPu"
-            ValueRange: [0, 0.12]
 
     ServiceProvider:
       ProviderName: "WINS Project"

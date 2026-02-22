@@ -9,6 +9,7 @@ from typing import Any, Callable, Dict, Optional, Tuple, Type, Union
 
 import pytest
 import tornado.httputil
+import tornado.iostream
 import tornado.web
 from tornado import concurrent
 
@@ -380,6 +381,30 @@ class TornadoRequestHandlerTest(unittest.TestCase):
         import asyncio
 
         asyncio.run(test_it())
+
+    # noinspection PyMethodMayBeStatic
+    def test_stream_closed_error_ignored(self):
+        application = tornado.web.Application()
+        setattr(application, SERVER_CTX_ATTR_NAME, MockContext())
+
+        # noinspection PyTypeChecker
+        request = tornado.httputil.HTTPServerRequest(
+            method="GET",
+            host="localhost:8080",
+            uri="/tiles/demo/conc_chl/0/0/0",
+            connection=MockConnection(),
+        )
+
+        class TestHandler(ApiHandler):
+            def get(self):
+                raise tornado.iostream.StreamClosedError()
+
+        api_route = ApiRoute("test", "/test", TestHandler)
+        handler = TornadoRequestHandler(application, request, api_route=api_route)
+
+        import asyncio
+
+        asyncio.run(handler.get())
 
 
 # Helpers

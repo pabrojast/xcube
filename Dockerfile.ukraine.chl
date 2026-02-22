@@ -1,0 +1,110 @@
+# ==============================================================================
+# Dockerfile for Ukraine CHL xcube Service
+# ==============================================================================
+# This image bundles local Terrascope CHL Zarr tiles and exposes one combined
+# virtual-stations dataset for timeseries/area calculations.
+#
+# Build example:
+# docker buildx build --load \
+#   -f Dockerfile.ukraine.chl \
+#   --build-context terrascope_chl_data=/path/to/terrascope_all_grids_full_history_zarr \
+#   -t xcube-ukraine-chl:latest \
+#   .
+# ==============================================================================
+
+ARG MICROMAMBA_VERSION=2.0.5
+FROM mambaorg/micromamba:${MICROMAMBA_VERSION}
+
+ARG NEW_MAMBA_USER=xcube
+ARG NEW_MAMBA_USER_ID=1000
+ARG NEW_MAMBA_USER_GID=1000
+
+LABEL maintainer="pabrojast"
+LABEL name="xcube-ukraine-chl"
+LABEL description="xcube server for local Terrascope CHL Zarr tiles (Ukraine)"
+LABEL version="1.0.0"
+
+USER root
+
+RUN apt-get -y update && \
+    apt-get -y upgrade && \
+    apt-get -y install vim jq curl wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN usermod "--login=${NEW_MAMBA_USER}" "--home=/home/${NEW_MAMBA_USER}" \
+        --move-home "-u ${NEW_MAMBA_USER_ID}" "${MAMBA_USER}" && \
+    groupmod "--new-name=${NEW_MAMBA_USER}" \
+             "-g ${NEW_MAMBA_USER_GID}" "${MAMBA_USER}" && \
+    echo "${NEW_MAMBA_USER}" > "/etc/arg_mamba_user"
+
+ENV MAMBA_USER=$NEW_MAMBA_USER
+
+USER $MAMBA_USER
+
+RUN micromamba config set remote_connect_timeout_secs 30.0 && \
+    micromamba config set remote_read_timeout_secs 120.0 && \
+    micromamba config set remote_max_retries 5 && \
+    micromamba config set remote_backoff_factor 2 && \
+    micromamba config set extract_threads 2
+
+COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/environment.yml
+RUN micromamba install -y -n base -f /tmp/environment.yml && \
+    micromamba clean --all --yes
+
+COPY --chown=$MAMBA_USER:$MAMBA_USER ./xcube /tmp/xcube
+COPY --chown=$MAMBA_USER:$MAMBA_USER ./pyproject.toml /tmp/pyproject.toml
+COPY --chown=$MAMBA_USER:$MAMBA_USER ./README.md /tmp/README.md
+
+WORKDIR /tmp
+ARG MAMBA_DOCKERFILE_ACTIVATE=1
+RUN pip install --no-deps . && \
+    micromamba clean --all --force-pkgs-dirs --yes
+
+WORKDIR /home/$MAMBA_USER
+RUN mkdir -p /home/$MAMBA_USER/ukraine_chl_service && \
+    mkdir -p /home/$MAMBA_USER/data/terrascope_all_grids_full_history_zarr
+
+# "terrascope_chl_data" must be provided via --build-context.
+# Keep this layer before app scripts so script-only changes do not trigger
+# re-copying the large Zarr context.
+COPY --chown=$MAMBA_USER:$MAMBA_USER --from=terrascope_chl_data . \
+    /home/$MAMBA_USER/data/terrascope_all_grids_full_history_zarr/
+
+COPY --chown=$MAMBA_USER:$MAMBA_USER ./compute_ukraine_chl_virtual_dataset.py \
+    /home/$MAMBA_USER/ukraine_chl_service/compute_ukraine_chl_virtual_dataset.py
+COPY --chown=$MAMBA_USER:$MAMBA_USER ./generate_ukraine_chl_xcube_config.py \
+    /home/$MAMBA_USER/ukraine_chl_service/generate_ukraine_chl_xcube_config.py
+COPY --chown=$MAMBA_USER:$MAMBA_USER ./precomputed \
+    /home/$MAMBA_USER/ukraine_chl_service/precomputed
+
+RUN python /home/$MAMBA_USER/ukraine_chl_service/generate_ukraine_chl_xcube_config.py \
+    --zarr-root /home/$MAMBA_USER/data/terrascope_all_grids_full_history_zarr \
+    --output /home/$MAMBA_USER/ukraine_chl_service/xcube_ukraine_chl_local_config.yml \
+    --compute-script /home/$MAMBA_USER/ukraine_chl_service/compute_ukraine_chl_virtual_dataset.py \
+    --raw-dataset-id ua_chl_virtual_stations \
+    --monthly-dataset-id ua_chl_monthly \
+    --levels-store chl_mosaic_ts.levels \
+    --monthly-levels-store chl_mosaic_monthly.levels \
+    --monthly-mosaic-store chl_mosaic_monthly.zarr \
+    --hide-raw-when-monthly \
+    --precomputed-dir /home/$MAMBA_USER/ukraine_chl_service/precomputed/chl_results \
+    --precomputed-route /precomputed && \
+    rm /home/$MAMBA_USER/ukraine_chl_service/generate_ukraine_chl_xcube_config.py
+
+WORKDIR /home/$MAMBA_USER/ukraine_chl_service
+
+ENV XCUBE_LOG_LEVEL="INFO"
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/openapi.json || exit 1
+
+ENTRYPOINT ["/usr/local/bin/_entrypoint.sh"]
+
+CMD ["xcube", "serve", \
+     "--config", "/home/xcube/ukraine_chl_service/xcube_ukraine_chl_local_config.yml", \
+     "--address", "0.0.0.0", \
+     "--port", "8080", \
+     "--verbose"]

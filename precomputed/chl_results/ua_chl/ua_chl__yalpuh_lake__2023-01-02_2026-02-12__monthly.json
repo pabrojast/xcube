@@ -1,0 +1,57 @@
+{
+  "contract": "xcube-calculations/v1",
+  "operation": "timeseries-batch-client",
+  "datasetId": "ua_chl_virtual_stations",
+  "varName": "CHL",
+  "hasData": false,
+  "summary": {
+    "rows": 0,
+    "sourceRows": 0,
+    "requestsTotal": 38,
+    "requestsFailed": 0,
+    "windows": 38,
+    "tiles": 1
+  },
+  "query": {
+    "aggMethods": [
+      "mean",
+      "count"
+    ],
+    "startDate": "2023-01-02",
+    "endDate": "2026-02-12",
+    "timeGrain": "monthly",
+    "maxValids": 60,
+    "monthsPerRequest": 1,
+    "daysPerRequest": 30,
+    "bbox": [
+      28.48,
+      45.5,
+      28.7,
+      45.63
+    ],
+    "tilesX": 1,
+    "tilesY": 1,
+    "timeoutSecs": 240,
+    "requestedStartDate": "auto",
+    "requestedEndDate": "auto",
+    "availableStartTime": "2023-01-02T09:03:51Z",
+    "availableEndTime": "2026-02-11T08:37:12Z"
+  },
+  "result": [],
+  "product": {
+    "id": "ua_chl",
+    "datasetId": "ua_chl_virtual_stations",
+    "variable": "CHL"
+  },
+  "area": {
+    "id": "yalpuh_lake",
+    "name": "Lake Yalpuh",
+    "type": "lake",
+    "bbox": [
+      28.48,
+      45.5,
+      28.7,
+      45.63
+    ]
+  }
+}

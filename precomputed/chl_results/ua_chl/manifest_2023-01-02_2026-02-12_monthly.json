@@ -1,0 +1,51 @@
+{
+  "productId": "ua_chl",
+  "productKey": "ua_chl",
+  "datasetId": "ua_chl_virtual_stations",
+  "varName": "CHL",
+  "timeGrain": "monthly",
+  "startDate": "2023-01-02",
+  "endDate": "2026-02-12",
+  "requestedStartDate": "auto",
+  "requestedEndDate": "auto",
+  "availableStartTime": "2023-01-02T09:03:51Z",
+  "availableEndTime": "2026-02-11T08:37:12Z",
+  "items": [
+    {
+      "file": "ua_chl__kyiv_reservoir__2023-01-02_2026-02-12__monthly.json",
+      "areaId": "kyiv_reservoir",
+      "areaName": "Kyiv Reservoir",
+      "areaType": "reservoir",
+      "hasData": true,
+      "rows": 37,
+      "requestsFailed": 0
+    },
+    {
+      "file": "ua_chl__kremenchuk_reservoir__2023-01-02_2026-02-12__monthly.json",
+      "areaId": "kremenchuk_reservoir",
+      "areaName": "Kremenchuk Reservoir",
+      "areaType": "reservoir",
+      "hasData": true,
+      "rows": 38,
+      "requestsFailed": 0
+    },
+    {
+      "file": "ua_chl__svityaz_lake__2023-01-02_2026-02-12__monthly.json",
+      "areaId": "svityaz_lake",
+      "areaName": "Lake Svityaz",
+      "areaType": "lake",
+      "hasData": false,
+      "rows": 0,
+      "requestsFailed": 0
+    },
+    {
+      "file": "ua_chl__yalpuh_lake__2023-01-02_2026-02-12__monthly.json",
+      "areaId": "yalpuh_lake",
+      "areaName": "Lake Yalpuh",
+      "areaType": "lake",
+      "hasData": false,
+      "rows": 0,
+      "requestsFailed": 0
+    }
+  ]
+}

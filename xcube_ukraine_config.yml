@@ -18,6 +18,9 @@ Datasets:
     BoundingBox: [22.0, 44.0, 40.5, 52.5]  # Approximate bounding box for Ukraine
     StoreInstanceId: azure_ukraine
     Path: "xcube/c_gls_LWQ100/ukraine/ukraine_lwq.zarr"
+    # RHOB/RHOW-like reflectance variables disabled.
+    Variables:
+      - turbidity_mean
     Style: default
     
     # Note: Zoom levels 6-7 show lake data best
@@ -35,6 +38,10 @@ Datasets:
     BoundingBox: [22.0, 44.0, 40.5, 52.5]  # Approximate bounding box for Ukraine
     StoreInstanceId: azure_ukraine
     Path: "xcube/c_gls_LWQ300/ukraine/ukraine_lwq.zarr"
+    # RHOB/RHOW-like reflectance variables disabled.
+    Variables:
+      - trsp_mean
+      - tsm_mean
     Style: default
     
     # Note: Zoom levels 6-7 show lake data best
@@ -54,46 +61,21 @@ Styles:
       turbidity_mean:
         ColorBar: "viridis"
         ValueRange: [0, 100]
-      Rw490_rep:
-        ColorBar: "plasma"
-        ValueRange: [0, 0.1]
-      Rw560_rep:
-        ColorBar: "plasma"
-        ValueRange: [0, 0.1]
-      Rw665_rep:
-        ColorBar: "plasma"
-        ValueRange: [0, 0.1]
-      Rw842_rep:
-        ColorBar: "plasma"
-        ValueRange: [0, 0.08]
-      Rw1610_rep:
-        ColorBar: "plasma"
-        ValueRange: [0, 0.05]
-      Rw2190_rep:
-        ColorBar: "plasma"
-        ValueRange: [0, 0.05]
+      trsp_mean:
+        ColorBar: "viridis"
+        ValueRange: [0, 10]
+      tsm_mean:
+        ColorBar: "viridis"
+        ValueRange: [0, 50]
   
   - Identifier: enhanced
     ColorMappings:
       turbidity_mean:
         ColorBar: "YlOrRd"
         ValueRange: [0, 150]
-      Rw490_rep:
-        ColorBar: "Blues"
-        ValueRange: [0, 0.15]
-      Rw560_rep:
-        ColorBar: "Greens"
-        ValueRange: [0, 0.15]
-      Rw665_rep:
-        ColorBar: "Reds"
-        ValueRange: [0, 0.15]
-      Rw842_rep:
-        ColorBar: "RdPu"
-        ValueRange: [0, 0.12]
-      Rw1610_rep:
-        ColorBar: "YlOrBr"
-        ValueRange: [0, 0.08]
-      Rw2190_rep:
-        ColorBar: "YlOrBr"
-        ValueRange: [0, 0.08]
-
+      trsp_mean:
+        ColorBar: "YlGnBu"
+        ValueRange: [0, 15]
+      tsm_mean:
+        ColorBar: "YlOrRd"
+        ValueRange: [0, 75]

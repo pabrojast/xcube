@@ -1,0 +1,67 @@
+{
+  "contract": "xcube-calculations/v1",
+  "operation": "timeseries-batch-client",
+  "datasetId": "ua_chl_virtual_stations",
+  "varName": "CHL",
+  "hasData": true,
+  "summary": {
+    "rows": 4,
+    "requestsTotal": 5,
+    "requestsFailed": 0,
+    "windows": 5,
+    "tiles": 1
+  },
+  "query": {
+    "aggMethods": [
+      "mean",
+      "count"
+    ],
+    "startDate": "2024-01-01",
+    "endDate": "2024-02-01",
+    "maxValids": 50,
+    "monthsPerRequest": 1,
+    "daysPerRequest": 7,
+    "bbox": [
+      32.45,
+      49.1,
+      33.1,
+      49.42
+    ],
+    "tilesX": 1,
+    "tilesY": 1,
+    "timeoutSecs": 180
+  },
+  "result": [
+    {
+      "time": "2024-01-04T08:53:51Z",
+      "mean": 17.552780151367188,
+      "count": 1.0
+    },
+    {
+      "time": "2024-01-09T08:52:39Z",
+      "mean": 117.87644958496094,
+      "count": 1.0
+    },
+    {
+      "time": "2024-01-12T09:02:39Z",
+      "mean": 408.9674377441406,
+      "count": 1.0
+    },
+    {
+      "time": "2024-01-17T09:03:11Z",
+      "mean": 32.62340545654297,
+      "count": 1.0
+    }
+  ],
+  "area": {
+    "id": "kremenchuk_reservoir",
+    "name": "Kremenchuk Reservoir",
+    "type": "reservoir",
+    "bbox": [
+      32.45,
+      49.1,
+      33.1,
+      49.42
+    ]
+  }
+}

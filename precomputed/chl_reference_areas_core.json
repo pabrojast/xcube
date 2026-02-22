@@ -1,0 +1,30 @@
+{
+  "productId": "ua_chl",
+  "datasetId": "ua_chl_virtual_stations",
+  "variable": "CHL",
+  "description": "Core reference inland-water areas with validated CHL data.",
+  "areas": [
+    {
+      "id": "kyiv_reservoir",
+      "name": "Kyiv Reservoir",
+      "type": "reservoir",
+      "bbox": [
+        30.30,
+        50.65,
+        30.95,
+        51.05
+      ]
+    },
+    {
+      "id": "kremenchuk_reservoir",
+      "name": "Kremenchuk Reservoir",
+      "type": "reservoir",
+      "bbox": [
+        32.45,
+        49.10,
+        33.10,
+        49.42
+      ]
+    }
+  ]
+}

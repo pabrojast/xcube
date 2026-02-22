@@ -1,0 +1,44 @@
+{
+  "datasetId": "ua_chl_virtual_stations",
+  "varName": "CHL",
+  "startDate": "2024-01-01",
+  "endDate": "2024-02-01",
+  "items": [
+    {
+      "file": "kremenchuk_reservoir_2024-01-01_2024-02-01.json",
+      "areaId": "kremenchuk_reservoir",
+      "areaName": "Kremenchuk Reservoir",
+      "areaType": "reservoir",
+      "hasData": true,
+      "rows": 4,
+      "requestsFailed": 0
+    },
+    {
+      "file": "kyiv_reservoir_2024-01-01_2024-02-01.json",
+      "areaId": "kyiv_reservoir",
+      "areaName": "Kyiv Reservoir",
+      "areaType": "reservoir",
+      "hasData": true,
+      "rows": 2,
+      "requestsFailed": 0
+    },
+    {
+      "file": "svityaz_lake_2024-01-01_2024-02-01.json",
+      "areaId": "svityaz_lake",
+      "areaName": "Lake Svityaz",
+      "areaType": "lake",
+      "hasData": false,
+      "rows": 0,
+      "requestsFailed": 0
+    },
+    {
+      "file": "yalpuh_lake_2024-01-01_2024-02-01.json",
+      "areaId": "yalpuh_lake",
+      "areaName": "Lake Yalpuh",
+      "areaType": "lake",
+      "hasData": false,
+      "rows": 0,
+      "requestsFailed": 0
+    }
+  ]
+}

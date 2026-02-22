@@ -26,6 +26,7 @@ from xcube.core.mldataset import (
 )
 from xcube.core.store import (
     DATASET_TYPE,
+    DataStoreError,
     DatasetDescriptor,
     DataStoreConfig,
     DataStorePool,
@@ -665,9 +666,17 @@ class DatasetsContext(ResourcesContext):
             if (
                 "data_type" not in open_params
                 and "data_type" in open_params_schema.properties
-                and "mldataset" in data_store.get_data_types()
             ):
-                open_params["data_type"] = "mldataset"
+                can_open_mldataset = False
+                try:
+                    can_open_mldataset = (
+                        "mldataset" in data_store.get_data_types_for_data(data_id)
+                    )
+                except DataStoreError:
+                    # Fallback for stores that cannot resolve per-data types.
+                    can_open_mldataset = "mldataset" in data_store.get_data_types()
+                if can_open_mldataset:
+                    open_params["data_type"] = "mldataset"
 
             with self.measure_time(
                 tag=f"Opened dataset {ds_id!r} from data store {store_instance_id!r}"

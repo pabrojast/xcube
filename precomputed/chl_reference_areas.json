@@ -1,0 +1,52 @@
+{
+  "productId": "ua_chl",
+  "datasetId": "ua_chl_virtual_stations",
+  "variable": "CHL",
+  "description": "Reference inland-water areas for CHL pre-calculation over Ukraine.",
+  "areas": [
+    {
+      "id": "kyiv_reservoir",
+      "name": "Kyiv Reservoir",
+      "type": "reservoir",
+      "bbox": [
+        30.30,
+        50.65,
+        30.95,
+        51.05
+      ]
+    },
+    {
+      "id": "kremenchuk_reservoir",
+      "name": "Kremenchuk Reservoir",
+      "type": "reservoir",
+      "bbox": [
+        32.45,
+        49.10,
+        33.10,
+        49.42
+      ]
+    },
+    {
+      "id": "svityaz_lake",
+      "name": "Lake Svityaz",
+      "type": "lake",
+      "bbox": [
+        23.75,
+        51.42,
+        23.96,
+        51.55
+      ]
+    },
+    {
+      "id": "yalpuh_lake",
+      "name": "Lake Yalpuh",
+      "type": "lake",
+      "bbox": [
+        28.48,
+        45.50,
+        28.70,
+        45.63
+      ]
+    }
+  ]
+}

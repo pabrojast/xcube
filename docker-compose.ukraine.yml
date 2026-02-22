@@ -11,16 +11,33 @@ services:
     ports:
       - "8080:8080"
     
+    restart: unless-stopped
+
+    # Effective with docker compose (non-swarm) to avoid host overload.
+    cpus: 2
+    mem_limit: 4g
+    mem_reservation: 512m
+    
+    # Keep native libs from oversubscribing threads.
     environment:
-      # Azure Storage credentials
       - AZURE_STORAGE_ACCOUNT_NAME=ihpwinsdata
       - AZURE_STORAGE_ACCOUNT_KEY=<AZURE_STORAGE_ACCOUNT_KEY>
       - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=ihpwinsdata;AccountKey=<AZURE_STORAGE_ACCOUNT_KEY>;EndpointSuffix=core.windows.net
-      
-      # xcube logging
       - XCUBE_LOG_LEVEL=INFO
-    
-    restart: unless-stopped
+      - OMP_NUM_THREADS=1
+      - OPENBLAS_NUM_THREADS=1
+      - MKL_NUM_THREADS=1
+      - NUMEXPR_NUM_THREADS=1
+      - GDAL_NUM_THREADS=1
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
     
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/datasets"]

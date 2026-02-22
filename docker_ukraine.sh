@@ -53,11 +53,21 @@ COMMAND=${1:-help}
 case $COMMAND in
     build)
         print_info "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
-        docker build \
+        BUILD_CMD=(docker build \
             -f Dockerfile.ukraine \
             -t ${IMAGE_NAME}:${IMAGE_TAG} \
             --progress=plain \
-            .
+            .)
+
+        # buildx backend does not support --memory/--cpu-quota for build.
+        # Run at lower host priority to reduce desktop freezes.
+        if command -v ionice >/dev/null 2>&1 && command -v nice >/dev/null 2>&1; then
+            ionice -c3 nice -n 15 "${BUILD_CMD[@]}"
+        elif command -v nice >/dev/null 2>&1; then
+            nice -n 15 "${BUILD_CMD[@]}"
+        else
+            "${BUILD_CMD[@]}"
+        fi
         
         if [ $? -eq 0 ]; then
             print_success "Docker image built successfully!"
@@ -82,6 +92,8 @@ case $COMMAND in
         docker run -d \
             --name ${CONTAINER_NAME} \
             -p ${PORT}:8080 \
+            --cpus=2 \
+            --memory=4g \
             -e AZURE_STORAGE_ACCOUNT_NAME="ihpwinsdata" \
             -e AZURE_STORAGE_ACCOUNT_KEY="<AZURE_STORAGE_ACCOUNT_KEY>" \
             --restart unless-stopped \

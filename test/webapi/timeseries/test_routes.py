@@ -2,6 +2,8 @@
 # Permissions are hereby granted under the terms of the MIT License:
 # https://opensource.org/licenses/MIT.
 
+import json
+
 from ..helpers import RoutesTestCase
 
 
@@ -116,4 +118,31 @@ class TimeSeriesRoutesTest(RoutesTestCase):
             " Bad Request ("
             "Query parameter 'tolerance' must have type 'float'."
             ")",
+        )
+
+    def test_fetch_timeseries_contract_response(self):
+        response = self.fetch(
+            "/timeseries/demo/conc_chl?responseFormat=contract",
+            method="POST",
+            body='{"type": "Point", "coordinates": [1, 51]}',
+        )
+        self.assertResponseOK(response)
+        payload = json.loads(response.data.decode("utf-8"))
+        assert payload["contract"] == "xcube-calculations/v1"
+        assert payload["operation"] == "timeseries"
+        assert payload["datasetId"] == "demo"
+        assert payload["varName"] == "conc_chl"
+        assert isinstance(payload["result"], list)
+        assert "hasData" in payload
+        assert "summary" in payload
+
+    def test_fetch_timeseries_invalid_response_format(self):
+        response = self.fetch(
+            "/timeseries/demo/conc_chl?responseFormat=invalid",
+            method="POST",
+            body='{"type": "Point", "coordinates": [1, 51]}',
+        )
+        self.assertBadRequestResponse(
+            response,
+            "Query parameter 'responseFormat' must be one of: raw, contract.",
         )

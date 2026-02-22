@@ -14,6 +14,7 @@ from typing import Any, Callable, Optional, Type, Union
 import tornado.escape
 import tornado.httputil
 import tornado.ioloop
+import tornado.iostream
 import tornado.web
 
 from xcube.constants import LOG, LOG_LEVEL_DETAIL
@@ -355,6 +356,15 @@ class TornadoRequestHandler(tornado.web.RequestHandler):
                 await method(*args, **kwargs)
             else:
                 method(*args, **kwargs)
+        except tornado.iostream.StreamClosedError:
+            # Normal case for tiles/WMTS when browser aborts pending requests.
+            LOG.log(
+                LOG_LEVEL_DETAIL,
+                "Client disconnected while processing %s %s",
+                method_name.upper(),
+                self.request.uri,
+            )
+            return
         except ApiError as e:
             raise tornado.web.HTTPError(e.status_code, log_message=e.message) from e
 

@@ -104,8 +104,10 @@ def get_datasets(
             LOG.info(f"Rejected dataset {ds_id!r} due to missing permission")
             continue
 
-        ds = ctx.get_dataset(ds_id)
         dataset_dict = dict(id=ds_id)
+        # Keep /datasets lightweight: avoid opening expensive datasets unless
+        # callers explicitly request details or point filtering.
+        ds = ctx.get_dataset(ds_id) if (details or point) else None
         _update_dataset_desc_properties(ds, dataset_config, dataset_dict)
 
         ds_bbox = dataset_config.get("BoundingBox")
@@ -354,21 +356,22 @@ def get_dataset(
 
 
 def get_dataset_title_and_description(
-    dataset: xr.Dataset,
+    dataset: xr.Dataset | None,
     dataset_config: Mapping[str, Any] | None = None,
 ) -> tuple[str, str | None]:
     dataset_config = dataset_config or {}
+    dataset_attrs = dataset.attrs if dataset is not None else {}
     ds_title = dataset_config.get(
         "Title",
         _get_str_attr(
-            dataset.attrs,
+            dataset_attrs,
             DS_TITLE_ATTR_NAMES,
             dataset_config.get("Identifier"),
         ),
     )
     ds_description = dataset_config.get(
         "Description",
-        _get_str_attr(dataset.attrs, DS_DESCRIPTION_ATTR_NAMES),
+        _get_str_attr(dataset_attrs, DS_DESCRIPTION_ATTR_NAMES),
     )
     return ds_title or "", ds_description or None
 
@@ -383,7 +386,7 @@ def get_variable_title_and_description(
 
 
 def _update_dataset_desc_properties(
-    ds: xr.Dataset, dataset_config: Mapping[str, Any], dataset_dict: dict[str, Any]
+    ds: xr.Dataset | None, dataset_config: Mapping[str, Any], dataset_dict: dict[str, Any]
 ):
     ds_title, ds_description = get_dataset_title_and_description(ds, dataset_config)
     group_title = dataset_config.get("GroupTitle")

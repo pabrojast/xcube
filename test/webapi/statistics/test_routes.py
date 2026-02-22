@@ -173,3 +173,46 @@ class StatisticsRoutesTest(RoutesTestCase):
         decoded_data = response.data.decode("utf-8")
         parsed_data = json.loads(decoded_data)
         assert round(parsed_data["result"]["value"], 3) == 220.0
+
+    def test_fetch_post_statistics_contract_response(self):
+        response = self.fetch(
+            "/statistics/demo/conc_chl?time=2017-01-30+10:46:34&responseFormat=contract",
+            method="POST",
+            body='{"type": "Point", "coordinates": [1.262, 50.243]}',
+        )
+        self.assertResponseOK(response)
+        parsed_data = json.loads(response.data.decode("utf-8"))
+        assert parsed_data["contract"] == "xcube-calculations/v1"
+        assert parsed_data["operation"] == "statistics"
+        assert parsed_data["datasetId"] == "demo"
+        assert parsed_data["varName"] == "conc_chl"
+        assert parsed_data["hasData"] is True
+        assert parsed_data["input"]["geoJsonType"] == "Point"
+        assert "result" in parsed_data
+
+    def test_fetch_get_statistics_contract_response(self):
+        response = self.fetch(
+            "/statistics/demo/conc_chl"
+            "?time=2017-01-30+10:46:34&lon=1.262&lat=50.243&responseFormat=contract",
+            method="GET",
+        )
+        self.assertResponseOK(response)
+        parsed_data = json.loads(response.data.decode("utf-8"))
+        assert parsed_data["contract"] == "xcube-calculations/v1"
+        assert parsed_data["operation"] == "statistics"
+        assert parsed_data["datasetId"] == "demo"
+        assert parsed_data["varName"] == "conc_chl"
+        assert parsed_data["hasData"] is True
+        assert parsed_data["input"]["mode"] == "point"
+        assert "result" in parsed_data
+
+    def test_fetch_statistics_invalid_response_format(self):
+        response = self.fetch(
+            "/statistics/demo/conc_chl?time=2017-01-30+10:46:34&responseFormat=invalid",
+            method="POST",
+            body='{"type": "Point", "coordinates": [1.262, 50.243]}',
+        )
+        self.assertBadRequestResponse(
+            response,
+            "Query parameter 'responseFormat' must be one of: raw, contract.",
+        )

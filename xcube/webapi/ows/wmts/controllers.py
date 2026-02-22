@@ -87,6 +87,9 @@ def get_capabilities_element(ctx: WmtsContext, base_url: str, tms_id: str) -> El
     common_tiling_scheme = TilingScheme.for_crs(get_crs_name_from_tms_id(tms_id))
 
     for dataset_config in ctx.datasets_ctx.get_dataset_configs():
+        if dataset_config.get("Hidden"):
+            continue
+
         ds_name = dataset_config["Identifier"]
 
         ml_dataset = ctx.datasets_ctx.get_ml_dataset(ds_name)

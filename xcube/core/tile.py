@@ -25,7 +25,7 @@ from xcube.util.projcache import ProjCache
 from xcube.util.timeindex import ensure_time_label_compatible
 from xcube.util.types import Pair, ScalarOrPair, normalize_scalar_or_pair
 
-from .mldataset import MultiLevelDataset
+from .mldataset import BaseMultiLevelDataset, MultiLevelDataset
 from .tilingscheme import DEFAULT_CRS_NAME, DEFAULT_TILE_SIZE, TilingScheme
 
 DEFAULT_VALUE_RANGE = (0.0, 1.0)
@@ -470,6 +470,11 @@ def compute_rgba_tile(
     ds_level = tiling_scheme.get_resolutions_level(
         tile_z, ml_dataset.avg_resolutions, ml_dataset.grid_mapping.spatial_unit_name
     )
+    if isinstance(ml_dataset, BaseMultiLevelDataset):
+        # BaseMultiLevelDataset computes lower levels by subsampling the entire
+        # source cube on demand, which can stall WMTS/tiles for very large cubes.
+        # Using base level avoids expensive global coarsening during requests.
+        ds_level = 0
 
     var_tiles = compute_tiles(
         ml_dataset,

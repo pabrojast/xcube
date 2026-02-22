@@ -227,12 +227,6 @@
                     <label for="variable-select">Variable:</label>
                     <select id="variable-select">
                         <option value="turbidity_mean">Turbidity Mean (FNU)</option>
-                        <option value="Rw490_rep">Water Reflectance 490nm (Blue)</option>
-                        <option value="Rw560_rep">Water Reflectance 560nm (Green)</option>
-                        <option value="Rw665_rep">Water Reflectance 665nm (Red)</option>
-                        <option value="Rw842_rep">Water Reflectance 842nm (NIR)</option>
-                        <option value="Rw1610_rep">Water Reflectance 1610nm (SWIR)</option>
-                        <option value="Rw2190_rep">Water Reflectance 2190nm (SWIR)</option>
                     </select>
                 </div>
                 
@@ -344,13 +338,7 @@
         // Get variable info
         function getVariableInfo(variableId) {
             const info = {
-                'turbidity_mean': { unit: 'FNU', label: 'Turbidity' },
-                'Rw490_rep': { unit: 'sr⁻¹', label: 'Reflectance 490nm' },
-                'Rw560_rep': { unit: 'sr⁻¹', label: 'Reflectance 560nm' },
-                'Rw665_rep': { unit: 'sr⁻¹', label: 'Reflectance 665nm' },
-                'Rw842_rep': { unit: 'sr⁻¹', label: 'Reflectance 842nm' },
-                'Rw1610_rep': { unit: 'sr⁻¹', label: 'Reflectance 1610nm' },
-                'Rw2190_rep': { unit: 'sr⁻¹', label: 'Reflectance 2190nm' }
+                'turbidity_mean': { unit: 'FNU', label: 'Turbidity' }
             };
             return info[variableId] || { unit: '', label: variableId };
         }

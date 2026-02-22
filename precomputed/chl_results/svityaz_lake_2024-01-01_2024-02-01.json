@@ -1,0 +1,46 @@
+{
+  "contract": "xcube-calculations/v1",
+  "operation": "timeseries-batch-client",
+  "datasetId": "ua_chl_virtual_stations",
+  "varName": "CHL",
+  "hasData": false,
+  "summary": {
+    "rows": 0,
+    "requestsTotal": 5,
+    "requestsFailed": 0,
+    "windows": 5,
+    "tiles": 1
+  },
+  "query": {
+    "aggMethods": [
+      "mean",
+      "count"
+    ],
+    "startDate": "2024-01-01",
+    "endDate": "2024-02-01",
+    "maxValids": 50,
+    "monthsPerRequest": 1,
+    "daysPerRequest": 7,
+    "bbox": [
+      23.75,
+      51.42,
+      23.96,
+      51.55
+    ],
+    "tilesX": 1,
+    "tilesY": 1,
+    "timeoutSecs": 180
+  },
+  "result": [],
+  "area": {
+    "id": "svityaz_lake",
+    "name": "Lake Svityaz",
+    "type": "lake",
+    "bbox": [
+      23.75,
+      51.42,
+      23.96,
+      51.55
+    ]
+  }
+}
